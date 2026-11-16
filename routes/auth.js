@@ -6,6 +6,16 @@ const Admin = require("../models/Admin");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Frontend (Vercel) and backend (Render) are on different sites, so the
+// cookie must be SameSite=None + Secure in production to be sent cross-site.
+const isProduction = process.env.NODE_ENV === "production";
+const cookieOptions = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  path: "/",
+};
+
 // POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
@@ -47,9 +57,7 @@ router.post("/login", async (req, res) => {
     );
 
     res.cookie("adminToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      ...cookieOptions,
       maxAge: 24 * 60 * 60 * 1000,
     });
 
@@ -89,12 +97,7 @@ router.get("/me", authMiddleware, (req, res) => {
 
 // POST /api/auth/logout
 router.post("/logout", (req, res) => {
-  res.clearCookie("adminToken", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-  });
+  res.clearCookie("adminToken", cookieOptions);
 
   return res.status(200).json({
     message: "Logged out successfully",
