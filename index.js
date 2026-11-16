@@ -23,12 +23,14 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  }),
-);
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     credentials: true,
+//   }),
+// );
+
+app.use(cors());
 app.use(cookieParser());
 
 // Update the original deferred Discord response
